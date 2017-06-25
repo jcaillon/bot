@@ -17,10 +17,23 @@ var connector = new builder.ChatConnector({
 server.post('/api/messages', connector.listen());
 
 // Receive messages from the user and respond by echoing each message back (prefixed with 'You said:')
-var bot = new builder.UniversalBot(connector, function (session) {
-    {
+var bot = new builder.UniversalBot(connector,    {
     localizerSettings: { 
         defaultLocale: "fr" 
-    };
-    session.send("Vous avez dit : %s", session.message.text);
+    }
 });
+
+//---------------------------------------------------------
+// Dialogs
+//---------------------------------------------------------
+
+bot.dialog('/', [
+    // Step 1
+    function (session) {
+        builder.Prompts.text(session, 'Quel est ton nom?');
+    },
+    // Step 2
+    function (session, results) {
+        session.endDialog('Bonjour %s!', results.response);
+    }
+]);
