@@ -1,5 +1,6 @@
 var restify = require('restify');
 var builder = require('botbuilder');
+var luisurl='https://westus.api.cognitive.microsoft.com/luis/v2.0/apps/3eabb991-acbb-45c2-981f-6ffea7d077bb?subscription-key=e0eed1d989074717ba571e054e3563c4&timezoneOffset=0&verbose=true&q=';
 
 // Setup Restify Server
 var server = restify.createServer();
@@ -23,6 +24,8 @@ var bot = new builder.UniversalBot(connector,    {
     }
 });
 
+var recognizer = new builder.LuisRecognizer(luisurl);
+bot.recognizer(recognizer);
 //---------------------------------------------------------
 // Dialogs
 //---------------------------------------------------------
@@ -30,6 +33,7 @@ var bot = new builder.UniversalBot(connector,    {
 bot.dialog('/', [
     // Step 1
     function (session) {
+        session.send("Bonjour je suis Camille");
         builder.Prompts.text(session, 'Quel est ton nom?');
     },
     // Step 2
@@ -37,3 +41,27 @@ bot.dialog('/', [
         session.endDialog('Bonjour %s!', results.response);
     }
 ]);
+
+bot.dialog('Demande',[
+        function (session, args, next) {
+        session.send('Analyse de votre demande : \'%s\'', session.message.text);
+
+        // try extracting entities
+        var allocation = builder.EntityRecognizer.findEntity(args.intent.entities, 'allocation');
+        if (allocation) {
+            next({ response: allocation.entity });
+        } else {
+            builder.Prompts.text(session, 'Quelle allocation ?');
+        }
+    },
+    function (session, results) {
+        var allocation = results.response;
+
+        var message = 'Vous voulez faire une demande pour ';
+            message += allocation;
+            message += ', avez-vous des questions avantde remplir la demande?';
+        session.send(message);
+
+            }
+]);
+    
