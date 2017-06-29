@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bluebird": "^3.4.7",
     "botbuilder": "^3.8.4",
     "restify": "^4.3.0",
     "dotenv-extended": "^1.0.4",

@@ -5,12 +5,9 @@ var builder = require('botbuilder');
 var needle = require('needle');
 var url = require('url');
 var validUrl = require('valid-url');
-var captionService = require('./caption-service');
-
-//var luisurl = 'https://westus.api.cognitive.microsoft.com/luis/v2.0/apps/3eabb991-acbb-45c2-981f-6ffea7d077bb?subscription-key=e0eed1d989074717ba571e054e3563c4&timezoneOffset=0&verbose=true&q=';
-var luisurl = 'https://westus.api.cognitive.microsoft.com/luis/v2.0/apps/458b5700-0aa4-4671-90cd-58131e789638?subscription-key=e0eed1d989074717ba571e054e3563c4&timezoneOffset=60&verbose=true&q=';
+var ocrService = require('./ocr-service');
+var spellService = require('./spell-service');
 // Setup Restify Server
-
 
 var server = restify.createServer();
 server.listen(process.env.port || process.env.PORT || 3978, function () {
@@ -36,25 +33,51 @@ server.post('/api/messages', connector.listen());
 var bot = new builder.UniversalBot(connector, function (session) {
     if (hasImageAttachment(session)) {
         var stream = getImageStreamFromMessage(session.message);
-        captionService
+        ocrService
             .getCaptionFromStream(stream)
             .then(function (caption) { handleSuccessResponse(session, caption); })
             .catch(function (error) { handleErrorResponse(session, error); });
     } else {
         var imageUrl = parseAnchorTag(session.message.text) || (validUrl.isUri(session.message.text) ? session.message.text : null);
         if (imageUrl) {
-            captionService
+            ocrService
                 .getCaptionFromUrl(imageUrl)
                 .then(function (caption) { handleSuccessResponse(session, caption); })
                 .catch(function (error) { handleErrorResponse(session, error); });
         } else {                  
-    session.send('Désolé, je n\'ai pas compris votre demande : \'%s\'. tappez \'aide\' pour obtenir une assistance.', session.message.text);
+            session.send('Désolé, je n\'ai pas compris votre demande : \'%s\'. tappez \'aide\' pour obtenir une assistance.', session.message.text);
+            spellService
+                .getCorrectedText('banjour')
+                .then(function (text) {
+                    session.send(text);
+                })
+                .catch(function (error) {
+                    console.error(error);
+                });
         }
     }
 });
 
+// Spell Check
+if (process.env.IS_SPELL_CORRECTION_ENABLED === 'true') {
+    bot.use({
+        botbuilder: function (session, next) {
+            spellService
+                .getCorrectedText(session.message.text)
+                .then(function (text) {
+                    session.message.text = text;
+                    next();
+                })
+                .catch(function (error) {
+                    console.error(error);
+                    next();
+                });
+        }
+    });
+}
 
-var recognizer = new builder.LuisRecognizer(luisurl);
+
+var recognizer = new builder.LuisRecognizer(process.env.LUIS_MODEL_URL);
 //var dialog = new builder.IntentDialog({ recognizers: [recognizer] });
 bot.recognizer(recognizer);
 //---------------------------------------------------------
@@ -212,14 +235,14 @@ function (session) {
      builder.Prompts.text(session, 'Pouvez-vous me fournir l\'image du docuemnt?');
     if (hasImageAttachment(session)) {
         var stream = getImageStreamFromMessage(session.message);
-        captionService
+        ocrService
             .getCaptionFromStream(stream)
             .then(function (caption) { handleSuccessResponse(session, caption); })
             .catch(function (error) { handleErrorResponse(session, error); });
     } else {
         var imageUrl = parseAnchorTag(session.message.text) || (validUrl.isUri(session.message.text) ? session.message.text : null);
         if (imageUrl) {
-            captionService
+            ocrService
                 .getCaptionFromUrl(imageUrl)
                 .then(function (caption) { handleSuccessResponse(session, caption); })
                 .catch(function (error) { handleErrorResponse(session, error); });
@@ -388,14 +411,16 @@ function parseAnchorTag(input) {
 //=========================================================
 // Response Handling
 //=========================================================
-function handleSuccessResponse(session, caption) {
-    if (caption) {
-        session.send('I think it\'s ' + caption);
-    }
-    else {
+function handleSuccessResponse(session, ocrObj) {
+    var numeroAllocataire = ocrObj.regions[0].lines[2].words[3].text;
+    var montant = ocrObj.regions[0].lines[3].words[3].text;
+    if (ocrObj) {
+        session.send('Ton numéro d\'allocataire est : ' + decodeURIComponent(escape(numeroAllocataire)));
+        session.send('Le montant accordé est : ' + decodeURIComponent(escape(montant)));
+        session.send('I think it\'s ' + JSON.stringify(ocrObj));
+    } else {
         session.send('Couldn\'t find a caption for this one');
     }
-
 }
 
 function handleErrorResponse(session, error) {
