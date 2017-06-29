@@ -50,6 +50,8 @@ bot.recognizer(recognizer);
  
  */
 
+var nom;
+
 bot.dialog('Demande', [
     function (session, args, next) {
         session.send('Analyse de votre demande : \'%s\'', session.message.text);
@@ -82,6 +84,7 @@ bot.dialog('Accueil', [
     },
     // Step 2
     function (session, results) {
+        nom=results.response;
         session.endDialog('Bonjour %s, que puis-je pour toi?', results.response);
     }
 ]).triggerAction({
@@ -89,7 +92,7 @@ bot.dialog('Accueil', [
 });
  
  bot.dialog('Aide', function (session) {
-    session.endDialog('Essaye des demandes du stype \'je veux faire une demande de RSA\' ou \'Mon nouveau numéro de téléphone est xxxxxxx\'');
+    session.endDialog(nom+ 'Essaye des demandes du stype \'je veux faire une demande de RSA\' ou \'Mon nouveau numéro de téléphone est xxxxxxx\'');
 }).triggerAction({
     matches: 'Aide'
 });
