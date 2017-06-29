@@ -174,6 +174,8 @@ bot.dialog('intentDemande', [
     matches: 'intentDemande'
 });
 
+var flg;
+
 bot.dialog('intentChoix', [
     function (session, args, next) {
         session.send('Analyse de votre demande : \'%s\'', session.message.text);
@@ -189,17 +191,30 @@ bot.dialog('intentChoix', [
         }
     },
     function (session, results) {
+        flg='ALE';
         presta = results.response.resolution.values[0];
         session.send(presta);
         if(presta==='ALE'){
         var message = 'Voici les conditions pour obtenir l\ALE.';
-       
+         session.send(message);
+       var msg = new builder.Message(session);
+    msg.attachmentLayout(builder.AttachmentLayout.carousel)
+    msg.attachments([
+        new builder.HeroCard(session)
+            .text("Souhaitez-vous pré remplir votre demande?")
+            .buttons([
+                builder.CardAction.imBack(session, "Oui", "Oui"),
+                builder.CardAction.imBack(session, "Non", "Non")
+            ])
+    ]);
+    session.send(msg);
+    
     } else if (presta==='AL'){
         var message = 'Voici les conditions pour obtenir l\AL.';
     } else {
         var message = 'Voici les conditions pour obtenir l\APL.';
     }
-    session.endDialog(message);
+    //session.endDialog(message);
    
     }
 ]).triggerAction({
@@ -207,8 +222,29 @@ bot.dialog('intentChoix', [
 });
 
 
+bot.dialog('intentOui', [
+    function (session, results) {
+        if(flg==='ENR')
+                {
+                 session.endDialog('Vos informations sont enregistrées, avez-vous une autre question?');
+                  
+                }
+        if(flg==='DOC'){
+            flg='ENR';
+        session.endDialog('Très bien %s, pouvez-vous prendre une photo avec votre smartphone ou joindre le scan de votre déclaration?',prenom);  
+    } else if(flg==='ALE')    {
+        flg='DOC';
+    session.send('Pouvez-vous nous communiquer votre déclaration de revenu?');
+    }        }
+]).triggerAction({
+    matches: 'intentOui'
+});
+
+
 
 var prenom='Luc';
+var montant;
+var numalloc;
 
 bot.dialog('intentBonjour', 
     function (session) {
@@ -415,9 +451,15 @@ function handleSuccessResponse(session, ocrObj) {
     var numeroAllocataire = ocrObj.regions[0].lines[2].words[3].text;
     var montant = ocrObj.regions[0].lines[3].words[3].text;
     if (ocrObj) {
-        session.send('Ton numéro d\'allocataire est : ' + decodeURIComponent(escape(numeroAllocataire)));
-        session.send('Le montant accordé est : ' + decodeURIComponent(escape(montant)));
-        session.send('I think it\'s ' + JSON.stringify(ocrObj));
+        numalloc=decodeURIComponent(escape(numeroAllocataire));
+        //session.send('Ton numéro d\'allocataire est : ' + decodeURIComponent(escape(numeroAllocataire)));
+        montant=decodeURIComponent(escape(montant));
+        {
+                 session.send(' Nous avons collecté les informations suivantes<br><ul><li>numéro allocataire : %s</li><li>montant : %s</li></ul>',numalloc,montant);
+                 session.endDialog('Voulez-vous que l\'on conserve ces informations pour votre demande');
+                }
+        //session.send('Le montant accordé est : ' + decodeURIComponent(escape(montant)));
+        //session.send('I think it\'s ' + JSON.stringify(ocrObj));
     } else {
         session.send('Couldn\'t find a caption for this one');
     }
