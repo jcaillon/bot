@@ -45,24 +45,27 @@ var bot = new builder.UniversalBot(connector, function (session) {
                 .getCaptionFromUrl(imageUrl)
                 .then(function (caption) { handleSuccessResponse(session, caption); })
                 .catch(function (error) { handleErrorResponse(session, error); });
-        } else {                  
-            session.send('Désolé, je n\'ai pas compris votre demande : \'%s\'. tappez \'aide\' pour obtenir une assistance.', session.message.text);
-            spellService
-                .getCorrectedText('banjour')
-                .then(function (text) {
-                    session.send(text);
-                })
-                .catch(function (error) {
-                    console.error(error);
-                });
+        } else {  
+            if(session.message.text!='reset') {
+            session.send('Désolé, je n\'ai pas compris votre demande : \'%s\'. tapez \'aide\' pour obtenir une assistance.', session.message.text);
+        }
         }
     }
 });
+
+
 
 // Spell Check
 if (process.env.IS_SPELL_CORRECTION_ENABLED === 'true') {
     bot.use({
         botbuilder: function (session, next) {
+            if(session.message.text === 'reset') {
+                session.reset();
+                session.send("La session a été réinitialisée");
+                session.endDialog();
+                return;
+            }
+            
             spellService
                 .getCorrectedText(session.message.text)
                 .then(function (text) {
@@ -280,7 +283,7 @@ var montant;
 var numalloc;
 
 bot.dialog('intentBonjour', 
-    function (session) {
+    function (session,args) {
                 if(args.intent.score < minscore) {  session.endDialog('Je peux vous assister uniquement sur des demandes liées aux Allocations Familiales.'); return; }
         session.endDialog('Bonjour %s, je suis Camille. Que puis-je pour vous ?', prenom);
     }
