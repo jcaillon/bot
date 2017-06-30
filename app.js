@@ -149,27 +149,31 @@ bot.dialog('intentDemande', [
     msg.attachmentLayout(builder.AttachmentLayout.carousel)
     msg.attachments([
         new builder.HeroCard(session)
-            .title("ALE")
-            .subtitle("Allocation logement étudiant")
+            .subtitle("ALE")
+            .title("Allocation logement étudiant")
             .text("description")
-            .images([builder.CardImage.create(session, 'https://bot-em.azurewebsites.net/miniatures/etudiant.png')])
+            .images([builder.CardImage.create(session, 'https://storagecamille.blob.core.windows.net/miniatures/etudiant2.jpg')])
 
             .buttons([
-                builder.CardAction.imBack(session, "choix:ALE", "ALE")
+                builder.CardAction.imBack(session, "choix:ALE", "Choisir")
             ]),
         new builder.HeroCard(session)
-            .title("AL")
-            .subtitle("Allocation logement")
+            .subtitle("AL")
+            .title("Allocation logement")
             .text("description")
+            .images([builder.CardImage.create(session, 'https://storagecamille.blob.core.windows.net/miniatures/famille2.jpg')])
+
             .buttons([
-                builder.CardAction.imBack(session, "choix:AL", "AL")
+                builder.CardAction.imBack(session, "choix:AL", "Choisir")
             ]),
         new builder.HeroCard(session)
-            .title("APL")
-            .subtitle("Allocation personnalisée au logement")
+            .subtitle("APL")
+            .title("Allocation personnalisée au logement")
             .text("description")
+            .images([builder.CardImage.create(session, 'https://storagecamille.blob.core.windows.net/miniatures/hipster2.jpg')])
+
             .buttons([
-                builder.CardAction.imBack(session, "choix:APL", "APL")
+                builder.CardAction.imBack(session, "choix:APL", "Choisir")
             ])
     ]);
     session.endDialog(msg);
