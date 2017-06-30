@@ -4,6 +4,7 @@
 // https://www.microsoft.com/cognitive-services/en-us/Computer-Vision-API/documentation/AnalyzeImage
 
 var request = require('request').defaults({ encoding: 'UTF-8' });
+
 var VISION_URL = process.env.MICROSOFT_VISION_URL;
 
 /** 
@@ -50,7 +51,6 @@ exports.getCaptionFromUrl = function (url) {
                 url: VISION_URL,
                 json: { 'url': url }
             };
-
             request.post(requestData, function (error, response, body) {
                 if (error) {
                     reject(error);
@@ -73,4 +73,4 @@ exports.getCaptionFromUrl = function (url) {
  */
 function formatOutput(body) {
     return JSON.parse(body);
-}
+};
