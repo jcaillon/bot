@@ -84,13 +84,15 @@ if (process.env.IS_SPELL_CORRECTION_ENABLED === 'true') {
             textService
                 .getSentiment(session.message.text)
                 .then(function (score) {
-                    totalConversationScore += score;
-                    totalConversation++;
-                    console.log("Score de la phrase " + score + "%");
-                    if (score < 0.3) {
-                        session.send('Veuillez rester poli s\'il vous plait!').endDialog();
+                    if (score >= 0) {
+                        totalConversationScore += score;
+                        totalConversation++;
+                        console.log("Score de la phrase " + score + "%");
+                        if (score < 0.3) {
+                            session.send('Veuillez rester poli s\'il vous plait!').endDialog();
+                        }
+                        console.log('Current conversation score : ' + Math.round(totalConversationScore / totalConversation * 100) + '%');
                     }
-                    console.log('Current conversation score : ' + Math.round(totalConversationScore / totalConversation * 100) + '%');
                 })
                 .catch(function (error) {
                     console.error(error);
@@ -144,7 +146,7 @@ var logement;
 
 bot.dialog('intentDemande', [
     function (session, args, next) {
-        session.send('Analyse de votre demande : \'%s\'', session.message.text);
+        //session.send('Analyse de votre demande : \'%s\'', session.message.text);
         if(args.intent.score < minscore) {  session.endDialog('Je peux vous assister uniquement sur des demandes liées aux Allocations Familiales.'); return; }
         // try extracting entities
         var domaine = builder.EntityRecognizer.findEntity(args.intent.entities, 'DomaineMetier');
@@ -224,7 +226,7 @@ bot.dialog('intentChoix', [
         presta = results.response.resolution.values[0];
         session.send(presta);
         if(presta==='ALE'){
-        var message = 'Voici les conditions pour obtenir l\ALE.<br><ul><li>Avoir le bail à sont nom</li><li>soumis à condition de ressources</li></ul>';
+        var message = 'Voici les conditions pour obtenir l\ALE.<br><ul><li>Avoir le bail à sont nom</li><li>Forniture d\une quittance de loyer</li></ul>';
          session.send(message);
        var msg = new builder.Message(session);
     msg.attachmentLayout(builder.AttachmentLayout.carousel)
@@ -284,7 +286,7 @@ bot.dialog('intentNon', [
                 }
         if(flg==='DOC'){
             flg='FIN';
-        session.endDialog('Pensez à nous communiquer vos ressources pour compléter votre dossier, avez-vous une autre question?');  
+        session.endDialog('Pensez à nous communiquer votre quittance de loyer pour compléter votre dossier, avez-vous une autre question?');  
     } else if(flg==='ALE')    {
         flg='FIN';
    session.endDialog('Avez-vous une autre question?');
@@ -523,7 +525,7 @@ function handleSucessOCRResponse(session, ocrObj) {
 }
 
 function handleErrorOCRResponse(session, error) {
-    var clientErrorMessage = 'Oops! Something went wrong. Try again later.';
+    var clientErrorMessage = 'Oops! Quelque chose c\'est mal passée. Merci de recommencer plus tard.';
     if (error.message && error.message.indexOf('Access denied') > -1) {
         clientErrorMessage += "\n" + error.message;
     }
