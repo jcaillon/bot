@@ -8,6 +8,7 @@ var validUrl = require('valid-url');
 var ocrService = require('./ocr-service');
 var spellService = require('./spell-service');
 // Setup Restify Server
+var minscore=0.5;
 
 var server = restify.createServer();
 server.listen(process.env.port || process.env.PORT || 3978, function () {
@@ -123,7 +124,7 @@ var logement;
 bot.dialog('intentDemande', [
     function (session, args, next) {
         session.send('Analyse de votre demande : \'%s\'', session.message.text);
-
+        if(args.intent.score < minscore) {  session.endDialog('Je peux vous assister uniquement sur des demandes liées aux Allocations Familiales.'); return; }
         // try extracting entities
         var domaine = builder.EntityRecognizer.findEntity(args.intent.entities, 'DomaineMetier');
         
@@ -178,7 +179,8 @@ var flg;
 
 bot.dialog('intentChoix', [
     function (session, args, next) {
-        session.send('Analyse de votre demande : \'%s\'', session.message.text);
+        if(args.intent.score < minscore) {  session.endDialog('Je peux vous assister uniquement sur des demandes liées aux Allocations Familiales.'); return; }
+
 
         // try extracting entities
 
@@ -241,6 +243,37 @@ bot.dialog('intentOui', [
 });
 
 
+bot.dialog('intentNon', [
+    function (session, results) {
+        if(flg==='FIN'){
+            flg='';
+            session.send('Au revoir et à bientot sur le www.caf.fr');     
+            session.endDialog('Camille remercie tous les organisateurs et participants de ce super évenement.');                 
+        }
+        if(flg==='ENR')
+                {
+                 session.endDialog('Pensez à nous envoyer votre document pour compléter votre dossier, avez-vous une autre question?');
+                 flg='FIN'; 
+                }
+        if(flg==='DOC'){
+            flg='FIN';
+        session.endDialog('Pensez à nous communiquer vos ressources pour compléter votre dossier, avez-vous une autre question?');  
+    } else if(flg==='ALE')    {
+        flg='FIN';
+   session.endDialog('Avez-vous une autre question?');
+    }        }
+]).triggerAction({
+    matches: 'intentNon'
+});
+
+bot.dialog('None', [
+    function (session, results) {
+   session.endDialog('Je peux vous assister uniquement sur des demandes liées aux Allocations Familiale.');
+    }        
+]).triggerAction({
+    matches: 'None'
+});
+
 
 var prenom='Luc';
 var montant;
@@ -248,6 +281,7 @@ var numalloc;
 
 bot.dialog('intentBonjour', 
     function (session) {
+                if(args.intent.score < minscore) {  session.endDialog('Je peux vous assister uniquement sur des demandes liées aux Allocations Familiales.'); return; }
         session.endDialog('Bonjour %s, je suis Camille. Que puis-je pour vous ?', prenom);
     }
 ).triggerAction({
@@ -265,9 +299,10 @@ bot.dialog('intentBonjour',
 };
 
  
- bot.dialog('Aide', 
+ bot.dialog('intentAide', 
  
 function (session) {
+    /*
      builder.Prompts.text(session, 'Pouvez-vous me fournir l\'image du docuemnt?');
     if (hasImageAttachment(session)) {
         var stream = getImageStreamFromMessage(session.message);
@@ -286,6 +321,7 @@ function (session) {
             session.send('Did you upload an image? I\'m more of a visual person. Try sending me an image or an image URL');
         }
 }
+    */
      
 /*
      builder.Prompts.choice(session,'Souhaitez-vous pré remplir votre formulaire?',
@@ -391,9 +427,9 @@ function (session) {
 
     
  */  
-    //session.endDialog(nom+ 'Essaye des demandes du stype \'je veux faire une demande de RSA\' ou \'Mon nouveau numéro de téléphone est xxxxxxx\'');
+    session.endDialog(nom+ 'Essaye des demandes du stype \'je veux faire une demande de RSA\' ou \'Mon nouveau numéro de téléphone est xxxxxxx\'');
     }).triggerAction({
-    matches: 'Aide'
+    matches: 'intentAide'
 });
 
 
