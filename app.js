@@ -7,6 +7,7 @@ var url = require('url');
 var validUrl = require('valid-url');
 var ocrService = require('./ocr-service');
 var spellService = require('./spell-service');
+var textService = require('./text-service');
 // Setup Restify Server
 var minscore=0.5;
 
@@ -151,6 +152,8 @@ bot.dialog('intentDemande', [
             .title("ALE")
             .subtitle("Allocation logement étudiant")
             .text("description")
+            .images([builder.CardImage.create(session, 'https://bot-em.azurewebsites.net/miniatures/etudiant.png')])
+
             .buttons([
                 builder.CardAction.imBack(session, "choix:ALE", "ALE")
             ]),
@@ -284,7 +287,7 @@ var numalloc;
 
 bot.dialog('intentBonjour', 
     function (session,args) {
-                if(args.intent.score < minscore) {  session.endDialog('Je peux vous assister uniquement sur des demandes liées aux Allocations Familiales.'); return; }
+                if(args.intent.score < minscore-0.2) {  session.endDialog('Je peux vous assister uniquement sur des demandes liées aux Allocations Familiales.'); return; }
         session.endDialog('Bonjour %s, je suis Camille. Que puis-je pour vous ?', prenom);
     }
 ).triggerAction({
