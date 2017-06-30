@@ -63,8 +63,12 @@ if (process.env.IS_SPELL_CORRECTION_ENABLED === 'true') {
                 session.reset();
                 session.endDialog("La session a été réinitialisée");
                 return;
-            } else if (session.message.text === "sentiment") {
-                session.endDialog("Le score sentiment est actuellement de " + (totalConversation == 0 ? '0' : Math.round(totalConversationScore / totalConversation * 100)) + '%');
+            }
+            if (session.message.text === 'sentiment') {
+                console.log ('sentiment écrit');
+                var result = (totalConversation == 0 ? 0 : Math.round(totalConversationScore / totalConversation * 100));
+                console.log (result);
+                session.send("Le score sentiment est actuellement de " + result + '%').endDialog();
                 return;
             }
             spellService
@@ -80,16 +84,18 @@ if (process.env.IS_SPELL_CORRECTION_ENABLED === 'true') {
             textService
                 .getSentiment(session.message.text)
                 .then(function (score) {
-                    totalConversationScore += score;
-                    totalConversation++;
-                    if (score < 0.2) {
-                        session.endDialog('Veuillez rester poli s\'il vous plait!');
+                    if (score >= 0) {
+                        totalConversationScore += score;
+                        totalConversation++;
+                        console.log("Score de la phrase " + score + "%");
+                        if (score < 0.3) {
+                            session.send('Veuillez rester poli s\'il vous plait!').endDialog();
+                        }
+                        console.log('Current conversation score : ' + Math.round(totalConversationScore / totalConversation * 100) + '%');
                     }
-                    console.log('Current conversation score : ' + Math.round(totalConversationScore / totalConversation * 100) + '%');
                 })
                 .catch(function (error) {
                     console.error(error);
-                    next();
                 });
         }
     });
@@ -140,7 +146,7 @@ var logement;
 
 bot.dialog('intentDemande', [
     function (session, args, next) {
-        session.send('Analyse de votre demande : \'%s\'', session.message.text);
+        //session.send('Analyse de votre demande : \'%s\'', session.message.text);
         if(args.intent.score < minscore) {  session.endDialog('Je peux vous assister uniquement sur des demandes liées aux Allocations Familiales.'); return; }
         // try extracting entities
         var domaine = builder.EntityRecognizer.findEntity(args.intent.entities, 'DomaineMetier');
@@ -164,7 +170,7 @@ bot.dialog('intentDemande', [
         new builder.HeroCard(session)
             .subtitle("ALE")
             .title("Allocation logement étudiant")
-            .text('L\’aide personnalisée au logement est destinée à toute personne : locataire d\'un logement neuf ou ancien, accédant à la propriété ou déjà propriétaire')
+            .text('L\’allocation logement étudiant est destinée à toute personne : locataire d\'un logement neuf ou ancien, accédant à la propriété ou déjà propriétaire')
             .images([builder.CardImage.create(session, 'https://storagecamille.blob.core.windows.net/miniatures/etudiant2.jpg')])
 
             .buttons([
@@ -173,7 +179,7 @@ bot.dialog('intentDemande', [
         new builder.HeroCard(session)
             .subtitle("AL")
             .title("Allocation logement")
-            .text('L\’aide personnalisée au logement est destinée à toute personne : locataire d\'un logement neuf ou ancien, accédant à la propriété ou déjà propriétaire')
+            .text('L\’allocation logement est destinée à toute personne : locataire d\'un logement neuf ou ancien, accédant à la propriété ou déjà propriétaire')
             .images([builder.CardImage.create(session, 'https://storagecamille.blob.core.windows.net/miniatures/famille2.jpg')])
 
             .buttons([
@@ -191,7 +197,7 @@ bot.dialog('intentDemande', [
     ]);
     session.endDialog(msg);
     }else {
-        session.endDialog('Je ne traite pas encore les demandes associées au domaine %s, mais j\'apprend vite!',domaine);
+        session.endDialog('Je ne traite pas encore les demandes associées au domaine %s, mais j\'apprends vite!',domaine);
     }
     }
 ]).triggerAction({
@@ -220,13 +226,13 @@ bot.dialog('intentChoix', [
         presta = results.response.resolution.values[0];
         session.send(presta);
         if(presta==='ALE'){
-        var message = 'Voici les conditions pour obtenir l\ALE.<br><ul><li>Avoir le bail à sont nom</li><li>soumis à condition de ressources</li></ul>';
+        var message = 'Voici les conditions pour obtenir l\'ALE.<br><ul><li>Avoir le bail à son nom</li><li>Fournir une quittance de loyer</li></ul>';
          session.send(message);
        var msg = new builder.Message(session);
     msg.attachmentLayout(builder.AttachmentLayout.carousel)
     msg.attachments([
         new builder.HeroCard(session)
-            .text("Souhaitez-vous pré remplir votre demande?")
+            .text("Souhaitez-vous pré-remplir votre demande?")
             .buttons([
                 builder.CardAction.imBack(session, "Oui", "Oui"),
                 builder.CardAction.imBack(session, "Non", "Non")
@@ -251,7 +257,7 @@ bot.dialog('intentOui', [
     function (session, results) {
         if(flg==='ENR')
                 {
-                 session.endDialog('Vos informations sont enregistrées, avez-vous une autre question?');
+                 session.endDialog('Vos informations sont enregistrées, avez-vous votre bail?');
                   
                 }
         if(flg==='DOC'){
@@ -259,7 +265,7 @@ bot.dialog('intentOui', [
         session.endDialog('Très bien %s, pouvez-vous prendre une photo avec votre smartphone ou joindre le scan de votre déclaration?',prenom);  
     } else if(flg==='ALE')    {
         flg='DOC';
-    session.send('Pouvez-vous nous communiquer votre déclaration de revenu?');
+    session.send('Pouvez-vous nous communiquer votre quittance de loyer?');
     }        }
 ]).triggerAction({
     matches: 'intentOui'
@@ -271,7 +277,7 @@ bot.dialog('intentNon', [
         if(flg==='FIN'){
             flg='';
             session.send('Au revoir et à bientot sur le www.caf.fr');     
-            session.endDialog('Camille remercie tous les organisateurs et participants de ce super évenement.');                 
+            session.endDialog('Camille remercie tous les organisateurs et participants de ce super événement.');                 
         }
         if(flg==='ENR')
                 {
@@ -280,7 +286,7 @@ bot.dialog('intentNon', [
                 }
         if(flg==='DOC'){
             flg='FIN';
-        session.endDialog('Pensez à nous communiquer vos ressources pour compléter votre dossier, avez-vous une autre question?');  
+        session.endDialog('Pensez à nous communiquer votre quittance de loyer pour compléter votre dossier, avez-vous une autre question?');  
     } else if(flg==='ALE')    {
         flg='FIN';
    session.endDialog('Avez-vous une autre question?');
@@ -507,9 +513,9 @@ function parseAnchorTag(input) {
 // Response Handling
 //=========================================================
 function handleSucessOCRResponse(session, ocrObj) {
-    if (process.env.DEBUG)
+    /*if (process.env.DEBUG)
         session.send('OCR response JSON : ' + JSON.stringify(ocrObj));
-
+        */
     var allocataire = parseOcrDocument.getAllocataire(ocrObj, [{"nom": "nom"}, {"prenom": "prenom"}, {"total": "montant"}]);
 
     if (allocataire.montant.length > 0) {
@@ -519,7 +525,7 @@ function handleSucessOCRResponse(session, ocrObj) {
 }
 
 function handleErrorOCRResponse(session, error) {
-    var clientErrorMessage = 'Oops! Something went wrong. Try again later.';
+    var clientErrorMessage = 'Oops! Quelque chose c\'est mal passée. Merci de recommencer plus tard.';
     if (error.message && error.message.indexOf('Access denied') > -1) {
         clientErrorMessage += "\n" + error.message;
     }
