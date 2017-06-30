@@ -151,29 +151,29 @@ bot.dialog('intentDemande', [
         new builder.HeroCard(session)
             .subtitle("ALE")
             .title("Allocation logement étudiant")
-            .text("description")
+            .text('L\’aide personnalisée au logement est destinée à toute personne : locataire d\'un logement neuf ou ancien, accédant à la propriété ou déjà propriétaire')
             .images([builder.CardImage.create(session, 'https://storagecamille.blob.core.windows.net/miniatures/etudiant2.jpg')])
 
             .buttons([
-                builder.CardAction.imBack(session, "choix:ALE", "Choisir")
+                builder.CardAction.imBack(session, "je choisis l'allocation ALE", "Choisir")
             ]),
         new builder.HeroCard(session)
             .subtitle("AL")
             .title("Allocation logement")
-            .text("description")
+            .text('L\’aide personnalisée au logement est destinée à toute personne : locataire d\'un logement neuf ou ancien, accédant à la propriété ou déjà propriétaire')
             .images([builder.CardImage.create(session, 'https://storagecamille.blob.core.windows.net/miniatures/famille2.jpg')])
 
             .buttons([
-                builder.CardAction.imBack(session, "choix:AL", "Choisir")
+                builder.CardAction.imBack(session, "je choisis l'allocation AL", "Choisir")
             ]),
         new builder.HeroCard(session)
             .subtitle("APL")
             .title("Allocation personnalisée au logement")
-            .text("description")
+            .text('L\’aide personnalisée au logement est destinée à toute personne : locataire d\'un logement neuf ou ancien, accédant à la propriété ou déjà propriétaire')
             .images([builder.CardImage.create(session, 'https://storagecamille.blob.core.windows.net/miniatures/hipster2.jpg')])
 
             .buttons([
-                builder.CardAction.imBack(session, "choix:APL", "Choisir")
+                builder.CardAction.imBack(session, "je choisis l'allocation APL", "Choisir")
             ])
     ]);
     session.endDialog(msg);
@@ -189,7 +189,7 @@ var flg;
 
 bot.dialog('intentChoix', [
     function (session, args, next) {
-        if(args.intent.score < minscore) {  session.endDialog('Je peux vous assister uniquement sur des demandes liées aux Allocations Familiales.'); return; }
+        //if(args.intent.score < minscore) {  session.endDialog('Je peux vous assister uniquement sur des demandes liées aux Allocations Familiales.'); return; }
 
 
         // try extracting entities
@@ -207,7 +207,7 @@ bot.dialog('intentChoix', [
         presta = results.response.resolution.values[0];
         session.send(presta);
         if(presta==='ALE'){
-        var message = 'Voici les conditions pour obtenir l\ALE.';
+        var message = 'Voici les conditions pour obtenir l\ALE.<br><ul><li>Avoir le bail à sont nom</li><li>soumis à condition de ressources</li></ul>';
          session.send(message);
        var msg = new builder.Message(session);
     msg.attachmentLayout(builder.AttachmentLayout.carousel)
