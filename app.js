@@ -197,7 +197,7 @@ bot.dialog('intentDemande', [
     ]);
     session.endDialog(msg);
     }else {
-        session.endDialog('Je ne traite pas encore les demandes associées au domaine %s, mais j\'apprend vite!',domaine);
+        session.endDialog('Je ne traite pas encore les demandes associées au domaine %s, mais j\'apprends vite!',domaine);
     }
     }
 ]).triggerAction({
@@ -277,7 +277,7 @@ bot.dialog('intentNon', [
         if(flg==='FIN'){
             flg='';
             session.send('Au revoir et à bientot sur le www.caf.fr');     
-            session.endDialog('Camille remercie tous les organisateurs et participants de ce super évenement.');                 
+            session.endDialog('Camille remercie tous les organisateurs et participants de ce super événement.');                 
         }
         if(flg==='ENR')
                 {
