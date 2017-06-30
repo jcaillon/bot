@@ -226,13 +226,13 @@ bot.dialog('intentChoix', [
         presta = results.response.resolution.values[0];
         session.send(presta);
         if(presta==='ALE'){
-        var message = 'Voici les conditions pour obtenir l\ALE.<br><ul><li>Avoir le bail à sont nom</li><li>Forniture d\une quittance de loyer</li></ul>';
+        var message = 'Voici les conditions pour obtenir l\'ALE.<br><ul><li>Avoir le bail à son nom</li><li>Fournir une quittance de loyer</li></ul>';
          session.send(message);
        var msg = new builder.Message(session);
     msg.attachmentLayout(builder.AttachmentLayout.carousel)
     msg.attachments([
         new builder.HeroCard(session)
-            .text("Souhaitez-vous pré remplir votre demande?")
+            .text("Souhaitez-vous pré-remplir votre demande?")
             .buttons([
                 builder.CardAction.imBack(session, "Oui", "Oui"),
                 builder.CardAction.imBack(session, "Non", "Non")
@@ -257,7 +257,7 @@ bot.dialog('intentOui', [
     function (session, results) {
         if(flg==='ENR')
                 {
-                 session.endDialog('Vos informations sont enregistrées, avez-vous une autre question?');
+                 session.endDialog('Vos informations sont enregistrées, avez-vous votre bail?');
                   
                 }
         if(flg==='DOC'){
@@ -265,7 +265,7 @@ bot.dialog('intentOui', [
         session.endDialog('Très bien %s, pouvez-vous prendre une photo avec votre smartphone ou joindre le scan de votre déclaration?',prenom);  
     } else if(flg==='ALE')    {
         flg='DOC';
-    session.send('Pouvez-vous nous communiquer votre déclaration de revenu?');
+    session.send('Pouvez-vous nous communiquer votre quittance de loyer?');
     }        }
 ]).triggerAction({
     matches: 'intentOui'
@@ -513,9 +513,9 @@ function parseAnchorTag(input) {
 // Response Handling
 //=========================================================
 function handleSucessOCRResponse(session, ocrObj) {
-    if (process.env.DEBUG)
+    /*if (process.env.DEBUG)
         session.send('OCR response JSON : ' + JSON.stringify(ocrObj));
-
+        */
     var allocataire = parseOcrDocument.getAllocataire(ocrObj, [{"nom": "nom"}, {"prenom": "prenom"}, {"total": "montant"}]);
 
     if (allocataire.montant.length > 0) {
