@@ -65,4 +65,4 @@ exports.getCorrectedText = function (text) {
             }
         }
     )
-}
+};

@@ -7,9 +7,13 @@ var url = require('url');
 var validUrl = require('valid-url');
 var ocrService = require('./ocr-service');
 var spellService = require('./spell-service');
+var parseOcrDocument = require('./parse-ocr-document');
 var textService = require('./text-service');
-// Setup Restify Server
-var minscore=0.5;
+
+// global vars
+var totalConversationScore = 0;
+var totalConversation = 0;
+var minscore = 0.5;
 
 var server = restify.createServer();
 server.listen(process.env.port || process.env.PORT || 3978, function () {
@@ -26,47 +30,43 @@ var connector = new builder.ChatConnector({
 server.post('/api/messages', connector.listen());
 
 // Receive messages from the user and respond by echoing each message back (prefixed with 'You said:')
-/*var bot = new builder.UniversalBot(connector,    {
- localizerSettings: { 
- defaultLocale: "fr" 
- }
- });
- */
 var bot = new builder.UniversalBot(connector, function (session) {
     if (hasImageAttachment(session)) {
         var stream = getImageStreamFromMessage(session.message);
         ocrService
             .getCaptionFromStream(stream)
-            .then(function (caption) { handleSuccessResponse(session, caption); })
-            .catch(function (error) { handleErrorResponse(session, error); });
+            .then(function (caption) { handleSucessOCRResponse(session, caption); })
+            .catch(function (error) { handleErrorOCRResponse(session, error); });
     } else {
         var imageUrl = parseAnchorTag(session.message.text) || (validUrl.isUri(session.message.text) ? session.message.text : null);
         if (imageUrl) {
             ocrService
                 .getCaptionFromUrl(imageUrl)
-                .then(function (caption) { handleSuccessResponse(session, caption); })
-                .catch(function (error) { handleErrorResponse(session, error); });
-        } else {  
-            if(session.message.text!='reset') {
-            session.send('Désolé, je n\'ai pas compris votre demande : \'%s\'. tapez \'aide\' pour obtenir une assistance.', session.message.text);
-        }
+                .then(function (caption) { handleSucessOCRResponse(session, caption); })
+                .catch(function (error) { handleErrorOCRResponse(session, error); });
+        } else {                  
+            if (session.message.text != 'reset' && session.message.text != 'sentiment') {
+                session.send('Désolé, je n\'ai pas compris votre demande : \'%s\'. tapez \'aide\' pour obtenir une assistance.', session.message.text);
+            }
         }
     }
 });
 
-
-
-// Spell Check
+// Middlewares :
+// Spell Check + sentiment analysis
 if (process.env.IS_SPELL_CORRECTION_ENABLED === 'true') {
     bot.use({
         botbuilder: function (session, next) {
-            if(session.message.text === 'reset') {
+            if (session.message.text === 'reset') {
+                totalConversationScore = 0;
+                totalConversation = 0;    
                 session.reset();
-                session.send("La session a été réinitialisée");
-                session.endDialog();
+                session.endDialog("La session a été réinitialisée");
+                return;
+            } else if (session.message.text === "sentiment") {
+                session.endDialog("Le score sentiment est actuellement de " + (totalConversation == 0 ? '0' : Math.round(totalConversationScore / totalConversation * 100)) + '%');
                 return;
             }
-            
             spellService
                 .getCorrectedText(session.message.text)
                 .then(function (text) {
@@ -77,10 +77,23 @@ if (process.env.IS_SPELL_CORRECTION_ENABLED === 'true') {
                     console.error(error);
                     next();
                 });
+            textService
+                .getSentiment(session.message.text)
+                .then(function (score) {
+                    totalConversationScore += score;
+                    totalConversation++;
+                    if (score < 0.2) {
+                        session.endDialog('Veuillez rester poli s\'il vous plait!');
+                    }
+                    console.log('Current conversation score : ' + Math.round(totalConversationScore / totalConversation * 100) + '%');
+                })
+                .catch(function (error) {
+                    console.error(error);
+                    next();
+                });
         }
     });
 }
-
 
 var recognizer = new builder.LuisRecognizer(process.env.LUIS_MODEL_URL);
 //var dialog = new builder.IntentDialog({ recognizers: [recognizer] });
@@ -291,7 +304,7 @@ var numalloc;
 
 bot.dialog('intentBonjour', 
     function (session,args) {
-                if(args.intent.score < minscore-0.2) {  session.endDialog('Je peux vous assister uniquement sur des demandes liées aux Allocations Familiales.'); return; }
+    if(args.intent.score < minscore-0.2) {  session.endDialog('Je peux vous assister uniquement sur des demandes liées aux Allocations Familiales.'); return; }
         session.endDialog('Bonjour %s, je suis Camille. Que puis-je pour vous ?', prenom);
     }
 ).triggerAction({
@@ -493,30 +506,23 @@ function parseAnchorTag(input) {
 //=========================================================
 // Response Handling
 //=========================================================
-function handleSuccessResponse(session, ocrObj) {
-    var numeroAllocataire = ocrObj.regions[0].lines[2].words[3].text;
-    var montant = ocrObj.regions[0].lines[3].words[3].text;
-    if (ocrObj) {
-        numalloc=decodeURIComponent(escape(numeroAllocataire));
-        //session.send('Ton numéro d\'allocataire est : ' + decodeURIComponent(escape(numeroAllocataire)));
-        montant=decodeURIComponent(escape(montant));
-        {
-                 session.send(' Nous avons collecté les informations suivantes<br><ul><li>numéro allocataire : %s</li><li>montant : %s</li></ul>',numalloc,montant);
-                 session.endDialog('Voulez-vous que l\'on conserve ces informations pour votre demande');
-                }
-        //session.send('Le montant accordé est : ' + decodeURIComponent(escape(montant)));
-        //session.send('I think it\'s ' + JSON.stringify(ocrObj));
-    } else {
-        session.send('Couldn\'t find a caption for this one');
+function handleSucessOCRResponse(session, ocrObj) {
+    if (process.env.DEBUG)
+        session.send('OCR response JSON : ' + JSON.stringify(ocrObj));
+
+    var allocataire = parseOcrDocument.getAllocataire(ocrObj, [{"nom": "nom"}, {"prenom": "prenom"}, {"total": "montant"}]);
+
+    if (allocataire.montant.length > 0) {
+        session.send(' Nous avons collecté les informations suivantes<br><ul><li>Nom, prénom : %s</li><li>Montant : %s</li></ul>', allocataire.nom + ' ' + allocataire.prenom, allocataire.montant);
+        session.endDialog('Voulez-vous que l\'on conserve ces informations pour votre demande?');
     }
 }
 
-function handleErrorResponse(session, error) {
+function handleErrorOCRResponse(session, error) {
     var clientErrorMessage = 'Oops! Something went wrong. Try again later.';
     if (error.message && error.message.indexOf('Access denied') > -1) {
         clientErrorMessage += "\n" + error.message;
     }
-
     console.error(error);
     session.send(clientErrorMessage);
 }

@@ -7,8 +7,8 @@ var TEXT_CHECK_API_URL = process.env.TEXT_CHECK_URL,
     TEXT_CHECK_API_KEY = process.env.TEXT_CHECK_API_KEY;
 
 /**
- * Gets the correct spelling for the given text
- * @param {string} text The text to be corrected
+ * Gets the sentiment score of a given text
+ * @param {string} text The text to analyse
  * @returns {Promise} Promise with corrected text if succeeded, error otherwise.
  */
 exports.getSentiment = function (text) {
@@ -19,10 +19,14 @@ exports.getSentiment = function (text) {
                     url: TEXT_CHECK_API_URL,
                     headers: {
                         "Ocp-Apim-Subscription-Key": TEXT_CHECK_API_KEY,
-                        "Content-Type": "application/x-www-form-urlencoded"
+                        "Content-Type": "application/json"
                     },
-                    form: {
-                        text: text
+                    body: {
+                        documents: [ {
+                            text: text,
+                            id: '1',
+                            language: 'fr'
+                        }]
                     },
                     json: true
                 };
@@ -35,33 +39,15 @@ exports.getSentiment = function (text) {
                         reject(body);
                     }
                     else {
-                        var previousOffset = 0;
-                        var result = '';
-
-                        for (var i = 0; i < body.flaggedTokens.length; i++) {
-                            var element = body.flaggedTokens[i];
-
-                            // Append the text from the previous offset to the current misspelled word offset
-                            result += text.substring(previousOffset, element.offset);
-
-                            // Append the corrected word instead of the misspelled word
-                            result += element.suggestions[0].suggestion;
-
-                            // Increment the offset by the length of the misspelled word
-                            previousOffset = element.offset + element.token.length;
+                        if (response.body.hasOwnProperty('documents')) {
+                            resolve(response.body.documents[0].score);
+                        } else {
+                            resolve(-1);
                         }
-
-                        // Append the text after the last misspelled word.
-                        if (previousOffset < text.length) {
-                            result += text.substring(previousOffset);
-                        }
-
-                        resolve(result);
                     }
-
                 });
             } else {
-                resolve(text);
+                resolve(-1);
             }
         }
     )
