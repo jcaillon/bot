@@ -1,0 +1,419 @@
+{
+  "luis_schema_version": "2.1.0",
+  "versionId": "v0.2.0",
+  "name": "Test import Camille",
+  "desc": "",
+  "culture": "fr-fr",
+  "intents": [
+    {
+      "name": "intentAide"
+    },
+    {
+      "name": "intentBonjour"
+    },
+    {
+      "name": "intentChoix"
+    },
+    {
+      "name": "intentDemande"
+    },
+    {
+      "name": "intentNon"
+    },
+    {
+      "name": "intentOui"
+    },
+    {
+      "name": "None"
+    }
+  ],
+  "entities": [],
+  "composites": [],
+  "closedLists": [
+    {
+      "name": "DomaineMetier",
+      "subLists": [
+        {
+          "canonicalForm": "Famille",
+          "list": [
+            "parent",
+            "parents",
+            "naissance",
+            "garde",
+            "naissances",
+            "bébé",
+            "bebe",
+            "Bébé",
+            "nourrisson",
+            "petit enfant",
+            "petits enfants",
+            "bébés",
+            "Bébés",
+            "nourrissons",
+            "Grossesse",
+            "grossesse",
+            "Grossesses",
+            "grossesses",
+            "enceinte",
+            "enfants",
+            "enfant"
+          ]
+        },
+        {
+          "canonicalForm": "Logement",
+          "list": [
+            "déménager",
+            "emménager",
+            "maison",
+            "appartement",
+            "location",
+            "bail",
+            "loyer",
+            "emménage",
+            "déménage"
+          ]
+        },
+        {
+          "canonicalForm": "Minima sociaux",
+          "list": []
+        }
+      ]
+    },
+    {
+      "name": "PrestationsFamille",
+      "subLists": [
+        {
+          "canonicalForm": "PAJE",
+          "list": [
+            "apje",
+            "paje",
+            "APJE",
+            "Allocation Jeune Enfant",
+            "Allocations pour jeunes enfants"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "PrestationsLogement",
+      "subLists": [
+        {
+          "canonicalForm": "ALE",
+          "list": [
+            "allocation logement etudiant"
+          ]
+        },
+        {
+          "canonicalForm": "AL",
+          "list": [
+            "allocation logement"
+          ]
+        },
+        {
+          "canonicalForm": "APL",
+          "list": [
+            "aide pour le logement"
+          ]
+        }
+      ]
+    }
+  ],
+  "bing_entities": [],
+  "actions": [],
+  "model_features": [
+    {
+      "name": "hello",
+      "mode": false,
+      "words": "hi,he,choa,ciao",
+      "activated": true
+    }
+  ],
+  "regex_features": [],
+  "utterances": [
+    {
+      "text": "salut",
+      "intent": "intentBonjour",
+      "entities": []
+    },
+    {
+      "text": "hello",
+      "intent": "intentBonjour",
+      "entities": []
+    },
+    {
+      "text": "aide",
+      "intent": "intentAide",
+      "entities": []
+    },
+    {
+      "text": "help",
+      "intent": "intentAide",
+      "entities": []
+    },
+    {
+      "text": "bonjour",
+      "intent": "intentBonjour",
+      "entities": []
+    },
+    {
+      "text": "nan",
+      "intent": "intentNon",
+      "entities": []
+    },
+    {
+      "text": "ok",
+      "intent": "intentOui",
+      "entities": []
+    },
+    {
+      "text": "oui",
+      "intent": "intentOui",
+      "entities": []
+    },
+    {
+      "text": "ouais",
+      "intent": "intentOui",
+      "entities": []
+    },
+    {
+      "text": "non",
+      "intent": "intentNon",
+      "entities": []
+    },
+    {
+      "text": "no",
+      "intent": "intentNon",
+      "entities": []
+    },
+    {
+      "text": "au secours",
+      "intent": "intentAide",
+      "entities": []
+    },
+    {
+      "text": "guten tag",
+      "intent": "intentBonjour",
+      "entities": []
+    },
+    {
+      "text": "je cherche un emploi",
+      "intent": "None",
+      "entities": []
+    },
+    {
+      "text": "pouvez-vous m'aider ?",
+      "intent": "intentAide",
+      "entities": []
+    },
+    {
+      "text": "je voudrais de l'aide",
+      "intent": "intentAide",
+      "entities": []
+    },
+    {
+      "text": "nein",
+      "intent": "intentNon",
+      "entities": []
+    },
+    {
+      "text": "je déménage",
+      "intent": "intentDemande",
+      "entities": []
+    },
+    {
+      "text": "nada",
+      "intent": "intentNon",
+      "entities": []
+    },
+    {
+      "text": "je vais déménager l’année prochaine",
+      "intent": "intentDemande",
+      "entities": []
+    },
+    {
+      "text": "je vais emménager dans mon nouvel appartement. est ce que je peux avoir de l’aide ?",
+      "intent": "intentDemande",
+      "entities": []
+    },
+    {
+      "text": "choix:al",
+      "intent": "intentChoix",
+      "entities": []
+    },
+    {
+      "text": "je veux des infos concernant l'ale",
+      "intent": "intentChoix",
+      "entities": []
+    },
+    {
+      "text": "j'ai une naissance",
+      "intent": "intentDemande",
+      "entities": []
+    },
+    {
+      "text": "quelles allocations pour mon enfant ?",
+      "intent": "intentDemande",
+      "entities": []
+    },
+    {
+      "text": "dis-en moi plus sur l'ale",
+      "intent": "intentChoix",
+      "entities": []
+    },
+    {
+      "text": "j'ai un [logement]",
+      "intent": "intentDemande",
+      "entities": []
+    },
+    {
+      "text": "j'emménage",
+      "intent": "intentDemande",
+      "entities": []
+    },
+    {
+      "text": "quelles sont les tranches d ' imposition",
+      "intent": "None",
+      "entities": []
+    },
+    {
+      "text": "quelles heures sont tard le soir",
+      "intent": "None",
+      "entities": []
+    },
+    {
+      "text": "je souhaite toucher ma retraite",
+      "intent": "None",
+      "entities": []
+    },
+    {
+      "text": "je veux des informations pour le chomage",
+      "intent": "None",
+      "entities": []
+    },
+    {
+      "text": "je souhaiterais de l'aide",
+      "intent": "intentAide",
+      "entities": []
+    },
+    {
+      "text": "j'ai trouvé une nouvelle location",
+      "intent": "intentDemande",
+      "entities": []
+    },
+    {
+      "text": "j'ai trouvé un nouvel appartement",
+      "intent": "intentDemande",
+      "entities": []
+    },
+    {
+      "text": "je vais avoir un bébé",
+      "intent": "intentDemande",
+      "entities": []
+    },
+    {
+      "text": "que pouvez vous me dire sur les nourrissons",
+      "intent": "intentDemande",
+      "entities": []
+    },
+    {
+      "text": "je souhaite des allocations",
+      "intent": "intentDemande",
+      "entities": []
+    },
+    {
+      "text": "je voudrais des allocations",
+      "intent": "intentDemande",
+      "entities": []
+    },
+    {
+      "text": "je veux faire une nouvelle demande d'aide au logement",
+      "intent": "intentDemande",
+      "entities": []
+    },
+    {
+      "text": "une cigogne va nous livrer un bébé",
+      "intent": "intentDemande",
+      "entities": []
+    },
+    {
+      "text": "je vais avoir un nouveau bébé",
+      "intent": "intentDemande",
+      "entities": []
+    },
+    {
+      "text": "j'ai un nouveau logement",
+      "intent": "intentDemande",
+      "entities": []
+    },
+    {
+      "text": "je veux une alloc",
+      "intent": "intentDemande",
+      "entities": []
+    },
+    {
+      "text": "je souhaite une allocation",
+      "intent": "intentDemande",
+      "entities": []
+    },
+    {
+      "text": "je veux une allocation",
+      "intent": "intentDemande",
+      "entities": []
+    },
+    {
+      "text": "je veux des allocations",
+      "intent": "intentDemande",
+      "entities": []
+    },
+    {
+      "text": "je vais avoir des bébés",
+      "intent": "intentDemande",
+      "entities": []
+    },
+    {
+      "text": "que pouvez-vous me dire sur mon futur bébé",
+      "intent": "intentDemande",
+      "entities": []
+    },
+    {
+      "text": "j'emménage dans un nouvel appartement",
+      "intent": "intentDemande",
+      "entities": []
+    },
+    {
+      "text": "je voudrais une allocation",
+      "intent": "intentDemande",
+      "entities": []
+    },
+    {
+      "text": "je veux des allocs",
+      "intent": "intentDemande",
+      "entities": []
+    },
+    {
+      "text": "je choisis ale",
+      "intent": "intentChoix",
+      "entities": []
+    },
+    {
+      "text": "je choisis l'allocation ale",
+      "intent": "intentChoix",
+      "entities": []
+    },
+    {
+      "text": "je souhaite l'allocation ale",
+      "intent": "intentChoix",
+      "entities": []
+    },
+    {
+      "text": "je veux l'allocation ale",
+      "intent": "intentChoix",
+      "entities": []
+    },
+    {
+      "text": "bonjour camille",
+      "intent": "intentBonjour",
+      "entities": []
+    }
+  ]
+}
