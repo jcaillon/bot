@@ -3,7 +3,7 @@
 // https://dev.cognitive.microsoft.com/docs/services/56e73033cf5ff80c2008c679/operations/56e73036cf5ff81048ee6727
 var request = require('request');
 
-var SPELL_CHECK_API_URL = 'https://api.cognitive.microsoft.com/bing/v5.0/spellcheck/?form=BCSSCK',
+var SPELL_CHECK_API_URL = process.env.BING_SPELL_CHECK_URL,
     SPELL_CHECK_API_KEY = process.env.BING_SPELL_CHECK_API_KEY;
 
 /**
@@ -18,13 +18,14 @@ exports.getCorrectedText = function (text) {
                 var requestData = {
                     url: SPELL_CHECK_API_URL,
                     headers: {
-                        "Ocp-Apim-Subscription-Key": SPELL_CHECK_API_KEY
+                        "Ocp-Apim-Subscription-Key": SPELL_CHECK_API_KEY,
+                        "Content-Type": "application/x-www-form-urlencoded"
                     },
                     form: {
                         text: text
                     },
                     json: true
-                }
+                };
 
                 request.post(requestData, function (error, response, body) {
                     if (error) {
