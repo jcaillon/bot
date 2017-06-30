@@ -63,8 +63,12 @@ if (process.env.IS_SPELL_CORRECTION_ENABLED === 'true') {
                 session.reset();
                 session.endDialog("La session a été réinitialisée");
                 return;
-            } else if (session.message.text === "sentiment") {
-                session.endDialog("Le score sentiment est actuellement de " + (totalConversation == 0 ? '0' : Math.round(totalConversationScore / totalConversation * 100)) + '%');
+            }
+            if (session.message.text === 'sentiment') {
+                console.log ('sentiment écrit');
+                var result = (totalConversation == 0 ? 0 : Math.round(totalConversationScore / totalConversation * 100));
+                console.log (result);
+                session.send("Le score sentiment est actuellement de " + result + '%').endDialog();
                 return;
             }
             spellService
@@ -82,14 +86,14 @@ if (process.env.IS_SPELL_CORRECTION_ENABLED === 'true') {
                 .then(function (score) {
                     totalConversationScore += score;
                     totalConversation++;
-                    if (score < 0.2) {
-                        session.endDialog('Veuillez rester poli s\'il vous plait!');
+                    console.log("Score de la phrase " + score + "%");
+                    if (score < 0.3) {
+                        session.send('Veuillez rester poli s\'il vous plait!').endDialog();
                     }
                     console.log('Current conversation score : ' + Math.round(totalConversationScore / totalConversation * 100) + '%');
                 })
                 .catch(function (error) {
                     console.error(error);
-                    next();
                 });
         }
     });
@@ -164,7 +168,7 @@ bot.dialog('intentDemande', [
         new builder.HeroCard(session)
             .subtitle("ALE")
             .title("Allocation logement étudiant")
-            .text('L\’aide personnalisée au logement est destinée à toute personne : locataire d\'un logement neuf ou ancien, accédant à la propriété ou déjà propriétaire')
+            .text('L\’allocation logement étudiant est destinée à toute personne : locataire d\'un logement neuf ou ancien, accédant à la propriété ou déjà propriétaire')
             .images([builder.CardImage.create(session, 'https://storagecamille.blob.core.windows.net/miniatures/etudiant2.jpg')])
 
             .buttons([
@@ -173,7 +177,7 @@ bot.dialog('intentDemande', [
         new builder.HeroCard(session)
             .subtitle("AL")
             .title("Allocation logement")
-            .text('L\’aide personnalisée au logement est destinée à toute personne : locataire d\'un logement neuf ou ancien, accédant à la propriété ou déjà propriétaire')
+            .text('L\’allocation logement est destinée à toute personne : locataire d\'un logement neuf ou ancien, accédant à la propriété ou déjà propriétaire')
             .images([builder.CardImage.create(session, 'https://storagecamille.blob.core.windows.net/miniatures/famille2.jpg')])
 
             .buttons([
